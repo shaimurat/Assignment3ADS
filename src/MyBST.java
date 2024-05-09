@@ -1,41 +1,65 @@
+import com.sun.source.tree.Tree;
+
+import java.util.Iterator;
+
 public class MyBST<K extends Comparable<K>, V> {
-    TreeNode root;
-    private int size;
+    public TreeNode root;
+    private int size = 0;
     private class TreeNode{
         private K key;
         private V value;
+        private int length = 1;
         private TreeNode right, left;
         public TreeNode(K key, V value){
             this.key = key;
             this.value = value  ;
         }
     }
-    public void put(K key, V value){
-        if(size == 0){
-            root.key = key;
-            root.value = value;
+    public MyBST(){
+        root = null;
+    }
+    public void put(K key, V value) {
+        if (root == null) {
+            root = new TreeNode(key, value);
+            size++;
+            return;
         }
-        else{
-            TreeNode newNode = root;
-            while(newNode != null){
-                if(key.compareTo(newNode.key)>0){
-                    newNode = newNode.right;
-                }
-                else if (key.compareTo(newNode.key)<0) {
-                    newNode = newNode.left;
+        TreeNode current = root;
+        while (true) {
+            if (key.compareTo(current.key) < 0) {
+                if (current.left != null) current = current.left;
+                else {
+                    current.left = new TreeNode(key, value);
+                    size++;
+                    return;
                 }
             }
-            newNode.key = key;
-            newNode.value = value;
+            else if (key.compareTo(current.key) > 0) {
+                if (current.right != null) current = current.right;
+                else {
+                    current.right = new TreeNode(key, value);
+                    size++;
+                    return;
+                }
+            }
+            else {
+                current.value = value;
+                return;
+            }
         }
-        size++;
+
     }
     public V getV(K key){
         TreeNode newNode = root;
         while(newNode!=null){
-            if(newNode.key.equals(key)){
-                return newNode.value;
-            }
+            if(newNode.left!=null){
+            if(newNode.left.key.equals(key)){
+                return newNode.left.value;
+            }}
+            if(newNode.left!=null){
+            if(newNode.right.key.equals(key)){
+                return newNode.right.value;
+            }}
             if(key.compareTo(newNode.key)>0){
                 newNode = newNode.right;
             }
@@ -46,27 +70,68 @@ public class MyBST<K extends Comparable<K>, V> {
         return null;
     }
     public void delete(K key) {
-        TreeNode newNode = root;
-        while(newNode!=null){
-            if(newNode.key.equals(key)){
-                if(newNode.right == null & newNode.left == null){newNode=null;}
-                else if (newNode.right == null) {
-                    TreeNode temp = newNode.left;
-                    newNode.left = newNode;
-                    newNode = temp;
-                }
-                else if (newNode.left == null) {
-                    TreeNode temp = newNode.left;
-                    newNode.left = newNode;
-                    newNode = temp;
-                }
+        if (root == null) return;
+        TreeNode parent = null;
+        TreeNode current = root;
+        boolean isEq = false;
+        while (current != null) {
+            current.length--;
+            if (key.compareTo(current.key) < 0) {
+                parent = current;
+                current = current.left;
             }
-            if(key.compareTo(newNode.key)>0){
-                newNode = newNode.right;
+            else if (key.compareTo(current.key) > 0) {
+                parent = current;
+                current = current.right;
             }
-            else if (key.compareTo(newNode.key)<0) {
-                newNode = newNode.left;
+            else if(key.equals(current.key)) {
+                if (current.left != null && current.right != null) {
+                    isEq = true;
+                    TreeNode temp = current;
+                    parent = current;
+                    current = current.right;
+                    while (current.left != null) {
+                        parent = current;
+                        current = current.left;
+                    }
+                    temp.key = current.key;
+                    temp.value = current.value;
+                    current.length++;
+                }
+                break;
             }
         }
+        if (current == null) return;
+        TreeNode sv;
+        if (current.left != null) sv = current.left;
+        else if (current.right != null) sv = current.right;
+        else sv = null;
+        if (parent == null) root = sv;
+        else if (parent.left == current) parent.left = sv;
+        else parent.right = sv;
+        if (!isEq) size--;
+    }
+    public int getSize() {
+        return size;
+    }
+    private class BSTIterator implements Iterator<K> {
+        private MyQueue<K> queue = new MyQueue<>();
+        public BSTIterator() {
+            inOrder(root);
+        }
+
+        private void inOrder(TreeNode node) {
+            if(node == null) return;
+            inOrder(node.left);
+            queue.enqueue(node.key);
+            inOrder(node.right);
+        }
+        public boolean hasNext() {
+            return !queue.isEmpty();
+        }
+        public K next() {
+            return queue.dequeue();
+        }
+
     }
 }
