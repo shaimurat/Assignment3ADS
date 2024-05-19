@@ -71,45 +71,44 @@ public class MyBST<K extends Comparable<K>, V> {
     }
     public void delete(K key) {
         if (root == null) return;
-        TreeNode parent = null;
-        TreeNode current = root;
-        boolean isEq = false;
-        while (current != null) {
-            current.length--;
-            if (key.compareTo(current.key) < 0) {
-                parent = current;
-                current = current.left;
+        TreeNode cur = root;
+        while(cur != null){
+            if(key.compareTo(cur.key)>0){
+                cur = cur.right;
             }
-            else if (key.compareTo(current.key) > 0) {
-                parent = current;
-                current = current.right;
+            else if (key.compareTo(cur.key)<0) {
+                cur = cur.left;
             }
-            else if(key.equals(current.key)) {
-                if (current.left != null && current.right != null) {
-                    isEq = true;
-                    TreeNode temp = current;
-                    parent = current;
-                    current = current.right;
-                    while (current.left != null) {
-                        parent = current;
-                        current = current.left;
-                    }
-                    temp.key = current.key;
-                    temp.value = current.value;
-                    current.length++;
+            else {
+                if(cur.right == null || cur.left == null){
+                    cur = null;
+                    size--;
+                    return;
+                } else if (cur.right != null) {
+                    cur = cur.right;
+                    size--;
+                    return;
+                } else if (cur.left != null) {
+                    cur = cur.left;
+                    size--;
+                    return;
                 }
-                break;
+                else {
+                    TreeNode temp = cur;
+                    TreeNode parent = temp;
+                    temp = temp.right;
+                    while (temp.left != null){
+                        parent = temp;
+                        temp = temp.left;
+                    }
+                    cur.value = temp.value;
+                    cur.key = temp.key;
+                    parent.left = null;
+                    size--;
+                    return;
+                }
             }
         }
-        if (current == null) return;
-        TreeNode sv;
-        if (current.left != null) sv = current.left;
-        else if (current.right != null) sv = current.right;
-        else sv = null;
-        if (parent == null) root = sv;
-        else if (parent.left == current) parent.left = sv;
-        else parent.right = sv;
-        if (!isEq) size--;
     }
     public int getSize() {
         return size;
@@ -119,7 +118,6 @@ public class MyBST<K extends Comparable<K>, V> {
         public BSTIterator() {
             inOrder(root);
         }
-
         private void inOrder(TreeNode node) {
             if(node == null) return;
             inOrder(node.left);
